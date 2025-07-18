@@ -1,6 +1,8 @@
 import express from 'express'
 import connectDB from './config/database.config.js';
 import User from './models/user.model.js';
+import validateUserSignUpData from './utils/validations.util.js';
+import bcrypt from 'bcrypt'
 
 const app = express()
 
@@ -9,7 +11,19 @@ app.use(express.json())
 // User Signup
 app.post("/signup", async (req, res) => {
     try {
-        const user = new User(req.body);
+
+        //validate user data
+        validateUserSignUpData(req)
+
+        //encrypt user password
+        const { firstName, lastName, emailId, password } = req.body
+        const hashPassword = await bcrypt.hash(password, 10)
+
+        //save user to the database
+        const user = new User({
+            firstName, lastName, emailId, password: hashPassword
+        });
+
         await user.save();
         res.status(201).json({ success: true, message: "User added successfully", data: user });
     } catch (error) {
@@ -17,6 +31,28 @@ app.post("/signup", async (req, res) => {
         res.status(400).json({ success: false, message: "Failed to create user", error: error.message });
     }
 });
+
+// User Login
+app.post("/login", async (req, res) => {
+    const { emailId, password } = req.body
+
+    try {
+        const user = await User.findOne({ emailId })
+        if (!user) {
+            throw new Error("Invalid email")
+        }
+        console.log(password, user.password);
+        const isPasswordValid = await bcrypt.compare(password, user.password)
+        if (!isPasswordValid) {
+            throw new Error("Invalid password")
+        }
+        res.status(200).json({ success: true, message: "User login successful" });
+
+    } catch (error) {
+        console.error("Error during user login:", error.message);
+        res.status(400).json({ success: false, message: "Failed to login user", error: error.message });
+    }
+})
 
 // Get User by ID
 app.get("/user/:id", async (req, res) => {
@@ -64,7 +100,7 @@ app.patch("/user/:id", async (req, res) => {
     const { id } = req.params;
     const data = req.body
     try {
-        const UPDATES_ALLOWED = ["firstName", "lastName", "age", "about", "skills", "photoUrl"]
+        const UPDATES_ALLOWED = ["firstName", "lastName", "age", "gender", "about", "skills", "photoUrl"]
         const isUpdateAllowed = Object.keys(data).every((key) => UPDATES_ALLOWED.includes(key))
 
         if (!isUpdateAllowed) {

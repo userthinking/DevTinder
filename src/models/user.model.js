@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import validator from "validator";
 
 const userSchema = new mongoose.Schema({
     firstName: {
@@ -19,7 +20,12 @@ const userSchema = new mongoose.Schema({
         required: true,
         unique: true,
         lowercase: true,
-        trim: true
+        trim: true,
+        validate(value) {
+            if (!validator.isEmail(value)) {
+                throw new Error("Email is not valid")
+            }
+        }
     },
     password: {
         type: String,
@@ -42,7 +48,12 @@ const userSchema = new mongoose.Schema({
     },
     photoUrl: {
         type: String,
-        default: "https://www.mauicardiovascularsymposium.com/wp-content/uploads/2019/08/dummy-profile-pic-300x300.png"
+        default: "https://www.mauicardiovascularsymposium.com/wp-content/uploads/2019/08/dummy-profile-pic-300x300.png",
+        validate(value) {
+            if (!validator.isURL(value)) {
+                throw new Error("Invalid photo URL")
+            }
+        }
     },
     about: {
         type: String,
