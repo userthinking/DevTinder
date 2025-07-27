@@ -24,9 +24,14 @@ authRouter.post("/signup", async (req, res) => {
             password: hashPassword
         });
 
-        await user.save();
+        const savedUser = await user.save();
+        // Create jwt token
+        const jwtToken = await savedUser.getJWT()
 
-        res.status(201).json({ success: true, message: "User added successfully", data: user });
+        // Add token to the cookie
+        res.cookie('token', jwtToken, { httpOnly: true, expires: new Date(Date.now() + 8 * 3600000) })
+
+        res.status(201).json({ success: true, message: "User added successfully", user: savedUser });
     } catch (error) {
         console.error("Error during user signup:", error.message);
         res.status(400).json({ success: false, message: error.message });
@@ -56,9 +61,9 @@ authRouter.post("/login", async (req, res) => {
         const jwtToken = await user.getJWT()
 
         // Add token to the cookie
-        res.cookie('token', jwtToken, { httpOnly: true })
+        res.cookie('token', jwtToken, { httpOnly: true, expires: new Date(Date.now() + 8 * 3600000) })
 
-        res.status(200).json({ success: true, message: "User login successful" });
+        res.status(200).json({ success: true, message: "User login successful", user });
 
     } catch (error) {
         console.error("Error during user login:", error.message);

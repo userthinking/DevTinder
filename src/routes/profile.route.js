@@ -8,7 +8,7 @@ const profileRouter = express.Router()
 profileRouter.get("/profile/view", userAuth, async (req, res) => {
     try {
         const user = req.user
-        res.status(200).json({ success: true, message: "User profile fetched successfully", data: user })
+        res.status(200).json({ success: true, message: "User profile fetched successfully", user })
 
     } catch (error) {
         console.error("Error during fetching profile:", error.message);
@@ -28,7 +28,7 @@ profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
         Object.keys(req.body).forEach((key) => loggedInUser[key] = req.body[key])
 
         await loggedInUser.save()
-        res.status(200).json({ success: true, message: "Edit successful" })
+        res.status(200).json({ success: true, message: "Edit successful", loggedInUser })
 
     } catch (error) {
         console.error("Error during edit profile:", error.message);
