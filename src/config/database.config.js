@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const connectDB = async () => {
-    await mongoose.connect('mongodb://localhost:27017/devTinder');
+    await mongoose.connect(process.env.DB_CONNECTION_SECRET);
     console.log("Connected to the Database...");
 };
 

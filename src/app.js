@@ -1,3 +1,5 @@
+import dotenv from 'dotenv'
+dotenv.config()
 import express from 'express'
 import cookieParser from 'cookie-parser';
 import cors from 'cors'
@@ -9,6 +11,7 @@ import requestRouter from './routes/connectionRequest.route.js';
 import userRouter from './routes/user.route.js';
 
 const app = express()
+
 
 app.use(cors({
     origin: 'http://localhost:5173',
@@ -27,8 +30,8 @@ app.use('/', userRouter)
 const startServer = async () => {
     try {
         await connectDB()
-        app.listen(6969, () => {
-            console.log("server running on 6969...");
+        app.listen(process.env.PORT, () => {
+            console.log(`server running on ${process.env.PORT}`);
         })
     } catch (error) {
         console.log("Database connection error: ", error);
